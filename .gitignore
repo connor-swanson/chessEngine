@@ -222,3 +222,5 @@ data/*.db
 backend/.venv/
 frontend/node_modules/
 frontend/dist/
+
+train/checkpoints/**
