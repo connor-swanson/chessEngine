@@ -41,6 +41,7 @@ class GameSummary(BaseModel):
     result: Optional[str]
     created_at: datetime
     move_count: int
+    source: Optional[str]  # "manual" | "simulation" | None (legacy rows)
 
 
 class RunSimulationRequest(BaseModel):

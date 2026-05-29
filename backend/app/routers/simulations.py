@@ -49,7 +49,7 @@ async def _run_single_game(white_player: str, black_player: str) -> str:
     board = chess.Board()
 
     async with SessionLocal() as db:
-        game = Game(white_player=white_player, black_player=black_player)
+        game = Game(white_player=white_player, black_player=black_player, source="simulation")
         db.add(game)
         await db.commit()
         await db.refresh(game)

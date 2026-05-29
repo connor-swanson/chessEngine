@@ -14,7 +14,7 @@ router = APIRouter(prefix="/games", tags=["games"])
 
 @router.post("", response_model=GameStateResponse)
 async def create_game(req: CreateGameRequest, db: AsyncSession = Depends(get_db)):
-    game = Game(white_player=req.white_player, black_player=req.black_player)
+    game = Game(white_player=req.white_player, black_player=req.black_player, source="manual")
     db.add(game)
     await db.commit()
     await db.refresh(game)
@@ -44,6 +44,7 @@ async def list_games(db: AsyncSession = Depends(get_db)):
             result=g.result,
             created_at=g.created_at,
             move_count=max(0, pos_count - 1),
+            source=g.source,
         )
         for g, pos_count in rows
     ]

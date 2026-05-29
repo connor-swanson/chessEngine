@@ -1,3 +1,4 @@
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 
@@ -19,3 +20,9 @@ async def get_db() -> AsyncSession:
 async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # Migration: add the source column to existing databases.
+        # SQLite raises an error if the column already exists; we swallow it.
+        try:
+            await conn.execute(text("ALTER TABLE games ADD COLUMN source VARCHAR(20)"))
+        except Exception:
+            pass  # column already present — nothing to do
