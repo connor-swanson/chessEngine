@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import type { SimulationStatus } from '../types'
+import { useBots } from '../hooks/useBots'
 
 const API = 'http://localhost:8000'
-const BOT_OPTIONS = ['random', 'heuristic']
 
 export function SimulationsTab() {
+  const BOT_OPTIONS = useBots()
   const [white, setWhite] = useState('random')
   const [black, setBlack] = useState('random')
   const [numGames, setNumGames] = useState(10)

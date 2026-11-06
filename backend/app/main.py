@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .database import init_db, SessionLocal
 from .models import Game
-from .routers import games, moves, simulations
+from .routers import bots, games, moves, simulations
 from .game_manager import game_manager
 from .chess_utils import board_to_state
 from .websocket_manager import connection_manager
@@ -29,6 +29,7 @@ app.add_middleware(
 app.include_router(games.router)
 app.include_router(moves.router)
 app.include_router(simulations.router)
+app.include_router(bots.router)
 
 
 @app.websocket("/games/{game_id}/ws")

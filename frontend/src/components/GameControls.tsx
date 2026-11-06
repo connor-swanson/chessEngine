@@ -1,6 +1,5 @@
 import { useState } from 'react'
-
-const PLAYER_OPTIONS = ['human', 'random', 'heuristic', 'stockfish-easy', 'stockfish-medium', 'stockfish']
+import { useBots } from '../hooks/useBots'
 
 interface GameControlsProps {
   turn: string
@@ -23,6 +22,7 @@ export function GameControls({
 }: GameControlsProps) {
   const [white, setWhite] = useState('human')
   const [black, setBlack] = useState('random')
+  const PLAYER_OPTIONS = ['human', ...useBots()]
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', minWidth: 200 }}>

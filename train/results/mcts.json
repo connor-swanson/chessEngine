@@ -1,0 +1,201 @@
+{
+  "elo": 1480.0,
+  "elo_ci": 75.0,
+  "elo_bots": 1643.0,
+  "best_iter": 4,
+  "engine_sims": 200,
+  "log": [
+    {
+      "iter": 1,
+      "games": 384,
+      "positions": 33693,
+      "buffer": 33693,
+      "avg_plies": 91.24479166666667,
+      "resigned": 191,
+      "false_resign_rate": 0.0,
+      "decisive": 0.8880208333333334,
+      "policy_loss": 2.029566461803349,
+      "value_loss": 0.7191117060093479,
+      "steps": 131,
+      "gate_score": 0.5875,
+      "promoted": true,
+      "best_iter": 1,
+      "selfplay_s": 545.5682120323181,
+      "total_s": 638.2007019519806
+    },
+    {
+      "iter": 2,
+      "games": 384,
+      "positions": 33082,
+      "buffer": 66775,
+      "avg_plies": 89.66145833333333,
+      "resigned": 188,
+      "false_resign_rate": 0.0,
+      "decisive": 0.8854166666666666,
+      "policy_loss": 2.0443461773007416,
+      "value_loss": 0.6914007871649986,
+      "steps": 129,
+      "gate_score": 0.4875,
+      "promoted": false,
+      "best_iter": 1,
+      "selfplay_s": 544.4827601909637,
+      "total_s": 636.3521881103516
+    },
+    {
+      "iter": 3,
+      "games": 384,
+      "positions": 34944,
+      "buffer": 101719,
+      "avg_plies": 94.546875,
+      "resigned": 174,
+      "false_resign_rate": 0.019230769230769232,
+      "decisive": 0.8541666666666666,
+      "policy_loss": 2.0464037314933887,
+      "value_loss": 0.7011311799287796,
+      "steps": 136,
+      "gate_score": 0.49375,
+      "promoted": false,
+      "best_iter": 1,
+      "selfplay_s": 613.4402220249176,
+      "total_s": 709.2882478237152
+    },
+    {
+      "iter": 4,
+      "games": 384,
+      "positions": 33277,
+      "buffer": 134996,
+      "avg_plies": 90.20572916666667,
+      "resigned": 174,
+      "false_resign_rate": 0.0,
+      "decisive": 0.8984375,
+      "policy_loss": 2.0508508737697158,
+      "value_loss": 0.6977647085522496,
+      "steps": 129,
+      "gate_score": 0.60625,
+      "promoted": true,
+      "best_iter": 4,
+      "selfplay_s": 561.3645467758179,
+      "total_s": 631.1286008358002
+    },
+    {
+      "iter": 5,
+      "games": 384,
+      "positions": 33524,
+      "buffer": 168520,
+      "avg_plies": 90.90104166666667,
+      "resigned": 154,
+      "false_resign_rate": 0.0,
+      "decisive": 0.8671875,
+      "policy_loss": 2.0459704527488123,
+      "value_loss": 0.6958178025025588,
+      "steps": 130,
+      "gate_score": 0.5125,
+      "promoted": false,
+      "best_iter": 4,
+      "selfplay_s": 442.84424591064453,
+      "total_s": 513.7182729244232
+    },
+    {
+      "iter": 6,
+      "games": 384,
+      "positions": 34442,
+      "buffer": 200000,
+      "avg_plies": 93.24479166666667,
+      "resigned": 172,
+      "false_resign_rate": 0.0,
+      "decisive": 0.9036458333333334,
+      "policy_loss": 2.0441824945051277,
+      "value_loss": 0.6923442411778579,
+      "steps": 134,
+      "gate_score": 0.5375,
+      "promoted": false,
+      "best_iter": 4,
+      "selfplay_s": 456.41045594215393,
+      "total_s": 534.8142778873444
+    },
+    {
+      "iter": 7,
+      "games": 384,
+      "positions": 35256,
+      "buffer": 200000,
+      "avg_plies": 95.421875,
+      "resigned": 150,
+      "false_resign_rate": 0.0,
+      "decisive": 0.8463541666666666,
+      "policy_loss": 2.0411112874093718,
+      "value_loss": 0.7268423351058124,
+      "steps": 137,
+      "gate_score": 0.55,
+      "promoted": false,
+      "best_iter": 4,
+      "selfplay_s": 440.1183488368988,
+      "total_s": 520.0317130088806
+    },
+    {
+      "iter": 8,
+      "games": 384,
+      "positions": 33465,
+      "buffer": 200000,
+      "avg_plies": 90.7265625,
+      "resigned": 162,
+      "false_resign_rate": 0.02564102564102564,
+      "decisive": 0.8984375,
+      "policy_loss": 2.0397906395105214,
+      "value_loss": 0.7358412073208735,
+      "steps": 130,
+      "gate_score": 0.50625,
+      "promoted": false,
+      "best_iter": 4,
+      "selfplay_s": 448.6077058315277,
+      "total_s": 516.7101142406464
+    }
+  ],
+  "vs_start": {
+    "W": 42,
+    "D": 31,
+    "L": 27
+  },
+  "final": {
+    "sf1320": {
+      "W": 69,
+      "D": 5,
+      "L": 26,
+      "score": 0.715,
+      "terminations": {
+        "CHECKMATE": 95,
+        "STALEMATE": 1,
+        "THREEFOLD_REPETITION": 3,
+        "INSUFFICIENT_MATERIAL": 1
+      }
+    },
+    "ab1": {
+      "W": 50,
+      "D": 2,
+      "L": 8,
+      "score": 0.85,
+      "terminations": {
+        "CHECKMATE": 58,
+        "THREEFOLD_REPETITION": 1,
+        "STALEMATE": 1
+      }
+    },
+    "ab2": {
+      "W": 47,
+      "D": 3,
+      "L": 10,
+      "score": 0.8083333333333333,
+      "terminations": {
+        "CHECKMATE": 57,
+        "FIFTY_MOVES": 1,
+        "THREEFOLD_REPETITION": 2
+      }
+    }
+  },
+  "raw_policy_vs_ab1": {
+    "sft (raw policy)": 0.15,
+    "reinforce (raw policy)": 0.23333333333333334,
+    "ppo (raw policy)": 0.24166666666666667,
+    "mcts (raw policy)": 0.26666666666666666,
+    "engine (MCTS 200)": 0.85
+  }
+}

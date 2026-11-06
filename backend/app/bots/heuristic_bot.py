@@ -1,6 +1,11 @@
-import asyncio
+from __future__ import annotations
+
+import random
+from typing import Optional
+
 import chess
-from .base import Bot
+
+from .base import SyncBot
 
 _MATERIAL = {
     chess.PAWN: 1,
@@ -14,35 +19,33 @@ _MATERIAL = {
 
 def _evaluate(board: chess.Board) -> float:
     score = 0.0
-    for square in chess.SQUARES:
-        piece = board.piece_at(square)
-        if piece is not None:
-            v = _MATERIAL[piece.piece_type]
-            score += v if piece.color == chess.WHITE else -v
+    for piece in board.piece_map().values():
+        v = _MATERIAL[piece.piece_type]
+        score += v if piece.color == chess.WHITE else -v
     return score
 
 
-def _best_move(board: chess.Board) -> chess.Move:
-    maximizing = board.turn == chess.WHITE
-    best_move = None
-    best_score = float("-inf") if maximizing else float("inf")
+class HeuristicBot(SyncBot):
+    """Depth-1 material bot.  Takes mate-in-1; otherwise picks uniformly at
+    random among the moves that maximise material after the move."""
 
-    for move in board.legal_moves:
-        board.push(move)
-        if board.is_checkmate():
+    def __init__(self, seed: Optional[int] = None):
+        self._rng = random.Random(seed)
+
+    def select_move(self, board: chess.Board) -> chess.Move:
+        board = board.copy()
+        sign = 1 if board.turn == chess.WHITE else -1
+        best_score = float("-inf")
+        best_moves = []
+        for move in list(board.legal_moves):
+            board.push(move)
+            if board.is_checkmate():
+                board.pop()
+                return move
+            score = sign * _evaluate(board)
             board.pop()
-            return move
-        score = _evaluate(board)
-        board.pop()
-        if maximizing and score > best_score:
-            best_score, best_move = score, move
-        elif not maximizing and score < best_score:
-            best_score, best_move = score, move
-
-    return best_move or next(iter(board.legal_moves))
-
-
-class HeuristicBot(Bot):
-    async def choose_move(self, board: chess.Board) -> chess.Move:
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, _best_move, board.copy())
+            if score > best_score:
+                best_score, best_moves = score, [move]
+            elif score == best_score:
+                best_moves.append(move)
+        return self._rng.choice(best_moves)

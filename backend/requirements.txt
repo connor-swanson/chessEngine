@@ -5,3 +5,7 @@ sqlalchemy>=2.0.0
 aiosqlite>=0.19.0
 numpy>=1.26.0
 pydantic>=2.0.0
+
+# Optional: only needed for the trained neural engine bots (engine, engine-fast, engine-policy, sft, mcts).
+# Also needs train/checkpoints/*.pt. Without it those bots are simply listed as unavailable.
+torch==2.8.0
