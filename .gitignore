@@ -229,3 +229,6 @@ data/*.npz
 # Claude Code files (kept locally, not in the repo)
 CLAUDE.md
 .claude/
+
+# IDE project files
+.idea/
