@@ -172,28 +172,4 @@ Pick an opponent in the UI:
 The scripted bots and Stockfish levels are listed alongside them. `GET /bots`
 reports which bots are available: neural bots need torch and their checkpoint.
 
-## Tests
 
-```bash
-train/.venv/bin/python -m pytest train/tests backend/tests -q
-```
-
-The tests cover:
-- move-encoding round-trips, the board encoding's symmetry, and the pairing of
-  training labels with positions;
-- MCTS finding mates and winning material, and tree reuse;
-- every bot returning legal moves, alpha-beta finding mates, random tie-breaks,
-  and the neural bots loading without torch until they're used;
-- the game generator end to end.
-
-## Limits and next steps
-
-- **The policy-gradient notebooks don't beat SFT** by more than noise. That's
-  the honest result at this compute budget, and the notebooks explain why:
-  sparse rewards, a weak critic, no lookahead.
-- **Strength comes from search plus a little self-play.** Eight AlphaZero
-  iterations used about 3,000 games; AlphaZero itself used 44 million. The
-  route towards ~1800 is more self-play iterations, more simulations, a bigger
-  network, and gradually less teacher data in the mix.
-- **CORS is wide open** for local development. Lock it down before deploying
-  anything.
