@@ -225,3 +225,7 @@ frontend/dist/
 
 train/checkpoints/**
 data/*.npz
+
+# Claude Code files (kept locally, not in the repo)
+CLAUDE.md
+.claude/
