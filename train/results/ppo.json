@@ -17,7 +17,7 @@
     "warmup_rounds": 2,
     "eval_games": 60,
     "eval_seed": 7,
-    "start": "/Users/connorswanson/Desktop/projects/chessEngine/train/checkpoints/sft.pt"
+    "start": "train/checkpoints/sft.pt"
   },
   "ratio_check": {
     "eval_max_abs": 4.76837158203125e-07,
