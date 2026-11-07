@@ -1,16 +1,26 @@
 import { useEffect, useState } from 'react'
+import { api } from '../lib/api'
 
-const API = 'http://localhost:8000'
 const FALLBACK = ['random', 'heuristic']
 
+export interface BotList {
+  available: string[]
+  loaded: boolean
+  error: string | null
+}
+
 // Bot names the backend reports as available (neural bots need torch + a checkpoint).
-export function useBots(): string[] {
-  const [bots, setBots] = useState<string[]>(FALLBACK)
+export function useBots(): BotList {
+  const [state, setState] = useState<BotList>({ available: FALLBACK, loaded: false, error: null })
   useEffect(() => {
-    fetch(`${API}/bots`)
-      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
-      .then((d: { available: string[] }) => setBots(d.available))
-      .catch(() => setBots(FALLBACK))
+    let alive = true
+    api
+      .bots()
+      .then((d) => alive && setState({ available: d.available, loaded: true, error: null }))
+      .catch((e: Error) => alive && setState({ available: FALLBACK, loaded: true, error: e.message }))
+    return () => {
+      alive = false
+    }
   }, [])
-  return bots
+  return state
 }

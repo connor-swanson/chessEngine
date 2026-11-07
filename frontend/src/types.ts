@@ -1,13 +1,23 @@
+export type Side = 'white' | 'black'
+
 export interface GameState {
   id: number
   white_player: string
   black_player: string
   fen: string
   legal_moves: string[]
-  turn: 'white' | 'black'
+  turn: Side
   result: string | null
+  /** "checkmate", "stalemate", "repetition", "resignation", "timeout", ... */
+  termination: string | null
   move_history: string[]
   is_game_over: boolean
+}
+
+export interface BotInfo {
+  name: string
+  available: boolean
+  reason: string | null
 }
 
 export interface SimulationStatus {
@@ -20,4 +30,17 @@ export interface SimulationStatus {
   draws: number
   white_player: string
   black_player: string
+}
+
+export interface TimeControl {
+  /** minutes per side */
+  base: number
+  /** seconds added after each move */
+  inc: number
+}
+
+export interface GameSetup {
+  white: string
+  black: string
+  timeControl: TimeControl | null
 }

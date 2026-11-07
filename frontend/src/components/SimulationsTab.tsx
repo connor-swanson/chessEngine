@@ -1,81 +1,95 @@
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { api } from '../lib/api'
+import { botProfile, sortBots } from '../lib/bots'
 import type { SimulationStatus } from '../types'
-import { useBots } from '../hooks/useBots'
+import { Avatar } from './PlayerBar'
 
-const API = 'http://localhost:8000'
-
-export function SimulationsTab() {
-  const BOT_OPTIONS = useBots()
+export function SimulationsTab({ bots }: { bots: string[] }) {
+  const profiles = useMemo(() => sortBots(bots), [bots])
   const [white, setWhite] = useState('random')
   const [black, setBlack] = useState('random')
   const [numGames, setNumGames] = useState(10)
   const [simulations, setSimulations] = useState<SimulationStatus[]>([])
-  const [running, setRunning] = useState(false)
-  const pollRefs = useRef<Record<number, ReturnType<typeof setInterval>>>({})
+  const [starting, setStarting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const polls = useRef<Record<number, ReturnType<typeof setInterval>>>({})
 
   const startSimulation = async () => {
-    setRunning(true)
-    const res = await fetch(`${API}/simulations`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ num_games: numGames, white_player: white, black_player: black }),
-    })
-    const sim: SimulationStatus = await res.json()
-    setSimulations((prev) => [sim, ...prev])
-    setRunning(false)
-
-    if (sim.status !== 'done') {
-      pollRefs.current[sim.id] = setInterval(async () => {
-        const r = await fetch(`${API}/simulations/${sim.id}`)
-        const updated: SimulationStatus = await r.json()
-        setSimulations((prev) => prev.map((s) => (s.id === updated.id ? updated : s)))
-        if (updated.status === 'done') {
-          clearInterval(pollRefs.current[updated.id])
-          delete pollRefs.current[updated.id]
-        }
-      }, 1000)
+    setStarting(true)
+    setError(null)
+    try {
+      const sim = await api.startSimulation(white, black, numGames)
+      setSimulations((prev) => [sim, ...prev])
+      if (sim.status !== 'done') {
+        polls.current[sim.id] = setInterval(async () => {
+          try {
+            const updated = await api.simulation(sim.id)
+            setSimulations((prev) => prev.map((s) => (s.id === updated.id ? updated : s)))
+            if (updated.status === 'done') {
+              clearInterval(polls.current[updated.id])
+              delete polls.current[updated.id]
+            }
+          } catch {
+            /* keep polling */
+          }
+        }, 1000)
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setStarting(false)
     }
   }
 
   useEffect(() => {
-    return () => {
-      Object.values(pollRefs.current).forEach(clearInterval)
-    }
+    const p = polls.current
+    return () => Object.values(p).forEach(clearInterval)
   }, [])
 
+  const select = (value: string, set: (v: string) => void, label: string) => (
+    <label className="field">
+      <span className="section-label">{label}</span>
+      <div className="select-with-avatar">
+        <Avatar name={value} size={30} />
+        <select value={value} onChange={(e) => set(e.target.value)}>
+          {profiles.map((p) => (
+            <option key={p.name} value={p.name}>
+              {p.label}
+              {p.rating ? ` (≈${p.rating})` : ''}
+            </option>
+          ))}
+        </select>
+      </div>
+    </label>
+  )
+
   return (
-    <div style={{ padding: '2rem', maxWidth: 700 }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '2rem', maxWidth: 300 }}>
-        <h3 style={{ margin: '0 0 0.4rem' }}>Run Simulations</h3>
-        <label>
-          White:{' '}
-          <select value={white} onChange={(e) => setWhite(e.target.value)}>
-            {BOT_OPTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
-          </select>
-        </label>
-        <label>
-          Black:{' '}
-          <select value={black} onChange={(e) => setBlack(e.target.value)}>
-            {BOT_OPTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
-          </select>
-        </label>
-        <label>
-          Games:{' '}
+    <div className="sim-layout">
+      <div className="panel sim-form">
+        <div className="panel-header">
+          <h2>Run simulations</h2>
+        </div>
+        <p className="muted">Play bots against each other in bulk. Games are saved to the database for training.</p>
+        {select(white, setWhite, 'White')}
+        {select(black, setBlack, 'Black')}
+        <label className="field">
+          <span className="section-label">Games</span>
           <input
             type="number"
             min={1}
             max={500}
             value={numGames}
-            onChange={(e) => setNumGames(Math.max(1, parseInt(e.target.value) || 1))}
-            style={{ width: 70 }}
+            onChange={(e) => setNumGames(Math.max(1, Math.min(500, parseInt(e.target.value) || 1)))}
           />
         </label>
-        <button onClick={startSimulation} disabled={running} style={{ marginTop: '0.4rem' }}>
-          {running ? 'Starting…' : 'Run'}
+        {error && <p className="notice error">{error}</p>}
+        <button className="primary-btn" onClick={() => void startSimulation()} disabled={starting}>
+          {starting ? 'Starting…' : 'Run'}
         </button>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div className="sim-results">
+        {simulations.length === 0 && <div className="empty-state">Results appear here as games finish.</div>}
         {simulations.map((sim) => (
           <SimulationCard key={sim.id} sim={sim} />
         ))}
@@ -86,51 +100,43 @@ export function SimulationsTab() {
 
 function SimulationCard({ sim }: { sim: SimulationStatus }) {
   const pct = sim.total > 0 ? (sim.completed / sim.total) * 100 : 0
-  const whitePct = sim.completed > 0 ? (sim.white_wins / sim.completed) * 100 : 0
-  const blackPct = sim.completed > 0 ? (sim.black_wins / sim.completed) * 100 : 0
-  const drawPct = sim.completed > 0 ? (sim.draws / sim.completed) * 100 : 0
-
+  const share = (n: number) => (sim.completed > 0 ? (n / sim.completed) * 100 : 0)
+  const score = sim.completed > 0 ? ((sim.white_wins + sim.draws / 2) / sim.completed) * 100 : 0
   return (
-    <div style={{
-      border: '1px solid #444',
-      borderRadius: 6,
-      padding: '1rem',
-      background: '#1a1a1a',
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-        <span style={{ fontWeight: 'bold' }}>
-          Sim #{sim.id} — {sim.white_player} vs {sim.black_player}
-        </span>
-        <span style={{
-          fontSize: '0.8rem',
-          color: sim.status === 'done' ? '#4caf50' : '#ffb74d',
-          fontWeight: 'bold',
-          textTransform: 'uppercase',
-        }}>
-          {sim.status === 'done' ? 'Done' : `Running ${sim.completed}/${sim.total}`}
+    <div className="panel sim-card">
+      <div className="sim-card-head">
+        <div className="sim-players">
+          <Avatar name={sim.white_player} size={28} />
+          <span>{botProfile(sim.white_player).label}</span>
+          <span className="vs">vs</span>
+          <Avatar name={sim.black_player} size={28} />
+          <span>{botProfile(sim.black_player).label}</span>
+        </div>
+        <span className={`status-pill ${sim.status === 'done' ? 'over' : 'thinking'}`}>
+          {sim.status === 'done' ? 'Done' : `${sim.completed}/${sim.total}`}
         </span>
       </div>
-
-      <div style={{ background: '#333', borderRadius: 4, height: 8, marginBottom: '0.75rem', overflow: 'hidden' }}>
-        <div style={{
-          width: `${pct}%`,
-          height: '100%',
-          background: sim.status === 'done' ? '#4caf50' : '#2196f3',
-          transition: 'width 0.4s ease',
-        }} />
+      <div className="progress">
+        <div style={{ width: `${pct}%` }} className={sim.status === 'done' ? 'done' : ''} />
       </div>
-
       {sim.completed > 0 && (
         <>
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.4rem', overflow: 'hidden', borderRadius: 4, height: 20 }}>
-            <div style={{ width: `${whitePct}%`, background: '#e0e0e0', transition: 'width 0.4s ease' }} title={`White wins: ${sim.white_wins}`} />
-            <div style={{ width: `${drawPct}%`, background: '#9e9e9e', transition: 'width 0.4s ease' }} title={`Draws: ${sim.draws}`} />
-            <div style={{ width: `${blackPct}%`, background: '#555', transition: 'width 0.4s ease' }} title={`Black wins: ${sim.black_wins}`} />
+          <div className="wdl-bar">
+            <div className="w" style={{ width: `${share(sim.white_wins)}%` }} title={`White wins: ${sim.white_wins}`} />
+            <div className="d" style={{ width: `${share(sim.draws)}%` }} title={`Draws: ${sim.draws}`} />
+            <div className="b" style={{ width: `${share(sim.black_wins)}%` }} title={`Black wins: ${sim.black_wins}`} />
           </div>
-          <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.85rem', color: '#bbb' }}>
-            <span>W: {sim.white_wins} ({whitePct.toFixed(1)}%)</span>
-            <span>D: {sim.draws} ({drawPct.toFixed(1)}%)</span>
-            <span>B: {sim.black_wins} ({blackPct.toFixed(1)}%)</span>
+          <div className="wdl-legend">
+            <span>
+              <i className="w" /> White {sim.white_wins} ({share(sim.white_wins).toFixed(0)}%)
+            </span>
+            <span>
+              <i className="d" /> Draw {sim.draws} ({share(sim.draws).toFixed(0)}%)
+            </span>
+            <span>
+              <i className="b" /> Black {sim.black_wins} ({share(sim.black_wins).toFixed(0)}%)
+            </span>
+            <span className="muted">White score {score.toFixed(1)}%</span>
           </div>
         </>
       )}

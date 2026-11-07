@@ -7,7 +7,7 @@ from .database import init_db, SessionLocal
 from .models import Game
 from .routers import bots, games, moves, simulations
 from .game_manager import game_manager
-from .chess_utils import board_to_state
+from .state import game_state
 from .websocket_manager import connection_manager
 
 
@@ -42,12 +42,7 @@ async def websocket_endpoint(websocket: WebSocket, game_id: int):
             async with SessionLocal() as db:
                 game = await db.get(Game, game_id)
                 if game:
-                    state = {
-                        **board_to_state(board, game_id),
-                        "white_player": game.white_player,
-                        "black_player": game.black_player,
-                    }
-                    await websocket.send_json(state)
+                    await websocket.send_json(game_state(board, game))
 
         while True:
             await websocket.receive_text()

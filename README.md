@@ -169,7 +169,14 @@ Pick an opponent in the UI:
 | `engine-fast` | 50 simulations | fast |
 | `engine-policy` | none (raw network) | instant |
 
-The scripted bots and Stockfish levels are listed alongside them. `GET /bots`
+The scripted bots and Stockfish levels are listed alongside them.
+
+The UI has what you'd expect from an online chess site: click or drag to move
+with legal-move hints, a promotion picker, captured pieces and a material
+count, optional clocks (3+2 up to 30+0), takebacks, hints from the engine,
+resigning, move-by-move review with the arrow keys, PGN/FEN export, sounds and
+board themes. You can also watch two bots play each other or play a friend on
+one board. `GET /bots`
 reports which bots are available: neural bots need torch and their checkpoint.
 
 

@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Optional, Tuple
+
 import chess
 import numpy as np
 
@@ -49,14 +53,49 @@ def fen_to_tensor(fen: str) -> np.ndarray:
     return tensor
 
 
-def board_to_state(board: chess.Board, game_id: int) -> dict:
-    """Serialize a board to a dict matching GameStateResponse."""
+_TERMINATION = {
+    chess.Termination.CHECKMATE: "checkmate",
+    chess.Termination.STALEMATE: "stalemate",
+    chess.Termination.INSUFFICIENT_MATERIAL: "insufficient material",
+    chess.Termination.SEVENTYFIVE_MOVES: "75-move rule",
+    chess.Termination.FIVEFOLD_REPETITION: "repetition",
+    chess.Termination.FIFTY_MOVES: "50-move rule",
+    chess.Termination.THREEFOLD_REPETITION: "repetition",
+}
+
+
+def board_outcome(board: chess.Board) -> Optional[Tuple[str, str]]:
+    """(result, termination) if the game is over on the board, else None.
+
+    Threefold repetition and the 50-move rule end the game automatically
+    (as on most online sites) so the UI and the bots agree on when it's over.
+    """
+    outcome = board.outcome()
+    if outcome is not None:
+        return outcome.result(), _TERMINATION.get(outcome.termination, outcome.termination.name.lower())
+    # outcome(claim_draw=True) would also end the game when a repetition is merely
+    # *available* to the side to move; only end it once it has actually happened.
+    if board.is_repetition(3):
+        return "1/2-1/2", "repetition"
+    if board.halfmove_clock >= 100:
+        return "1/2-1/2", "50-move rule"
+    return None
+
+
+def board_to_state(board: chess.Board, game_id: int, ending: Optional[Tuple[str, str]] = None) -> dict:
+    """Serialize a board to a dict matching GameStateResponse.
+
+    `ending` is a (result, termination) that overrides the board, e.g. a
+    resignation or a loss on time.
+    """
+    over = ending or board_outcome(board)
     return {
         "id": game_id,
         "fen": board.fen(),
-        "legal_moves": [m.uci() for m in board.legal_moves],
+        "legal_moves": [] if over else [m.uci() for m in board.legal_moves],
         "turn": "white" if board.turn == chess.WHITE else "black",
-        "is_game_over": board.is_game_over(),
-        "result": board.result() if board.is_game_over() else None,
+        "is_game_over": over is not None,
+        "result": over[0] if over else None,
+        "termination": over[1] if over else None,
         "move_history": [m.uci() for m in board.move_stack],
     }

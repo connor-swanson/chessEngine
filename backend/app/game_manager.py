@@ -1,11 +1,14 @@
 from __future__ import annotations
-from typing import Optional
+from typing import Optional, Tuple
 import chess
 
 
 class GameManager:
     def __init__(self):
         self._boards: dict[int, chess.Board] = {}
+        # game_id -> (result, termination) for games ended off the board
+        # (resignation, timeout).  Board-decided endings are computed live.
+        self._endings: dict[int, Tuple[str, str]] = {}
 
     def create(self, game_id: int) -> chess.Board:
         board = chess.Board()
@@ -31,8 +34,24 @@ class GameManager:
         board.push(move)
         return move
 
+    def undo(self, game_id: int, plies: int) -> int:
+        """Take back up to `plies` half-moves; returns how many were undone."""
+        board = self._boards[game_id]
+        n = min(plies, len(board.move_stack))
+        for _ in range(n):
+            board.pop()
+        self._endings.pop(game_id, None)
+        return n
+
+    def set_ending(self, game_id: int, result: str, termination: str):
+        self._endings[game_id] = (result, termination)
+
+    def get_ending(self, game_id: int) -> Optional[Tuple[str, str]]:
+        return self._endings.get(game_id)
+
     def remove(self, game_id: int):
         self._boards.pop(game_id, None)
+        self._endings.pop(game_id, None)
 
 
 game_manager = GameManager()

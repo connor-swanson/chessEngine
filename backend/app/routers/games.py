@@ -7,7 +7,8 @@ from ..database import get_db
 from ..models import Game, Position
 from ..schemas import CreateGameRequest, GameStateResponse, GameSummary, PositionResponse
 from ..game_manager import game_manager
-from ..chess_utils import board_to_state, fen_to_tensor
+from ..chess_utils import fen_to_tensor
+from ..state import game_state
 
 router = APIRouter(prefix="/games", tags=["games"])
 
@@ -24,7 +25,7 @@ async def create_game(req: CreateGameRequest, db: AsyncSession = Depends(get_db)
     db.add(Position(game_id=game.id, move_number=0, fen=board.fen(), move_uci=None, is_terminal=False))
     await db.commit()
 
-    return {**board_to_state(board, game.id), "white_player": game.white_player, "black_player": game.black_player}
+    return game_state(board, game)
 
 
 @router.get("", response_model=list[GameSummary])
@@ -66,7 +67,7 @@ async def get_game(game_id: int, db: AsyncSession = Depends(get_db)):
         moves = [p.move_uci for p in positions[1:] if p.move_uci]
         board = game_manager.restore(game_id, moves)
 
-    return {**board_to_state(board, game_id), "white_player": game.white_player, "black_player": game.black_player}
+    return game_state(board, game)
 
 
 @router.get("/{game_id}/positions", response_model=list[PositionResponse])

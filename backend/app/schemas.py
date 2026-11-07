@@ -1,6 +1,6 @@
 from datetime import datetime
-from typing import Optional
-from pydantic import BaseModel
+from typing import Literal, Optional
+from pydantic import BaseModel, Field
 
 
 class CreateGameRequest(BaseModel):
@@ -10,6 +10,20 @@ class CreateGameRequest(BaseModel):
 
 class MoveRequest(BaseModel):
     move_uci: str
+
+
+class UndoRequest(BaseModel):
+    plies: int = Field(1, ge=1, le=2)
+
+
+class ResignRequest(BaseModel):
+    color: Literal["white", "black"]           # the side that resigns / runs out of time
+    reason: Literal["resignation", "timeout"] = "resignation"
+
+
+class HintResponse(BaseModel):
+    move_uci: str
+    bot: str
 
 
 class GameStateResponse(BaseModel):
@@ -22,6 +36,7 @@ class GameStateResponse(BaseModel):
     result: Optional[str]
     move_history: list[str]
     is_game_over: bool
+    termination: Optional[str] = None  # "checkmate", "resignation", "timeout", ...
 
 
 class PositionResponse(BaseModel):
