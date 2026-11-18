@@ -11,6 +11,11 @@ engine step by step, each one teaching a different learning method:
 The pipeline runs end to end: simulate bot games → train → evaluate → play the
 engine in the browser.
 
+A second series of notebooks in `interp/` opens up the trained network to
+teach interpretability methods. The first one, **attribution**, is done:
+gradients, integrated gradients, occlusion, contrastive targets, and how to
+test whether an explanation is faithful.
+
 ## Results
 
 All ratings are on one scale, anchored to Stockfish's `UCI_Elo=1320` setting at
@@ -44,12 +49,14 @@ backend/            FastAPI + python-chess + SQLite: game API, WebSocket, bots
   app/routers/      games, moves, simulations, bots (GET /bots)
   tests/            bot + engine-bot tests
 frontend/           React + Vite UI: play against any bot, run bulk simulations
+interp/
+  01_attribution.ipynb   which squares made the network choose that move?
 train/
   chess_sft.ipynb        1 · behavioural cloning of ab2
   chess_reinforce.ipynb  2 · REINFORCE with a value baseline
   chess_ppo.ipynb        3 · PPO (clipped ratio, GAE)
   chess_mcts.ipynb       4 · AlphaZero loop, final engine + Elo evaluation
-  chesslib/              shared plumbing used by every notebook
+  chesslib/              shared plumbing used by every notebook (interp.py: for interp/)
   generate_games.py      parallel bot-vs-bot game generator → data/chess.db
   run_pipeline.sh        executes all four notebooks in order
   tests/                 chesslib tests
@@ -153,6 +160,16 @@ To simulate games yourself:
 ```bash
 train/.venv/bin/python train/generate_games.py --white ab2 --black ab2 --games 1000 --workers 8 --random-opening-plies 6
 ```
+
+## Interpretability notebooks
+
+```bash
+cd interp && ../train/.venv/bin/jupyter nbconvert --to notebook --execute --inplace 01_attribution.ipynb
+```
+
+Uses `train/checkpoints/engine.pt` plus positions from
+`data/chess.db`, so train the engine first. It takes about 2 minutes on an
+Apple M4.
 
 ## Play against it
 
